@@ -10,7 +10,7 @@ def reset_log_file(log_file: str = LOG_FILE_PATH) -> None:
         f.write("")
 
 
-def setup_logger(logger_name: str, log_file: str = LOG_FILE_PATH, level: int = logging.INFO) -> logging.Logger:
+def setup_logger(logger_name: str, log_file: str = LOG_FILE_PATH, level: int = logging.DEBUG) -> logging.Logger:
     """
     Setup a logger.
 
