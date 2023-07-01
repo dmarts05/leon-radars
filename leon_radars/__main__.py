@@ -1,14 +1,11 @@
 """Module containing the main function of the program."""
 
 import os
-import re
-from datetime import date
-from typing import List
-
-import requests
-from bs4 import BeautifulSoup
 
 from leon_radars.config_parser.config_parser import parse_config
+from leon_radars.message.message_builder import build_message
+from leon_radars.message.message_sender import send_message_to_telegram
+from leon_radars.radar_scraper.radar_scraper import extract_radar_data
 from leon_radars.utils.logger import reset_log_file, setup_logger
 
 logger = setup_logger(logger_name=__name__)
@@ -46,80 +43,30 @@ def main() -> None:
     logger.debug(f"Configuration: {config}")
 
     # **************************************************************
-    # Get latest radar data link
-    # **************************************************************
-    logger.info("Getting latest radar data link...")
-    spanish_month_names = {
-        "January": "enero",
-        "February": "febrero",
-        "March": "marzo",
-        "April": "abril",
-        "May": "mayo",
-        "June": "junio",
-        "July": "julio",
-        "August": "agosto",
-        "September": "septiembre",
-        "October": "octubre",
-        "November": "noviembre",
-        "December": "diciembre",
-    }
-    month_name = spanish_month_names[date.today().strftime("%B")]
-    request_url = "https://www.ahoraleon.com/?s=radar+" + month_name
-    logger.debug(f"Request URL: {request_url}")
-
-    res = requests.get(request_url)
-    if res.status_code != 200:
-        logger.error("Error getting radar data link")
-        exit(1)
-    soup = BeautifulSoup(res.text, "html.parser")
-
-    radar_data_link = soup.find("a", {"rel": "bookmark"})
-    if not radar_data_link:
-        logger.error("Error getting radar data link")
-        exit(1)
-
-    radar_data_link = radar_data_link.get("href")  # type: ignore
-
-    logger.debug(f"Latest radar data link: {radar_data_link}")
-
-    # **************************************************************
     # Extract radar data for today
     # **************************************************************
     logger.info("Extracting radar data for today...")
-    res = requests.get(str(radar_data_link))  # type: ignore
-    if res.status_code != 200:
-        logger.error("Error getting radar data")
-        exit(1)
-    soup = BeautifulSoup(res.text, "html.parser")
+    morning_data, afternoon_data, radar_data_link = extract_radar_data()
+    logger.debug(f"\nMorning data: {morning_data}")
+    logger.debug(f"\nAfternoon data: {afternoon_data}")
+    logger.debug(f"\nRadar data link: {radar_data_link}")
 
-    # Get table rows for extracting data
-    rows = soup.find_all("tr")
-    if not rows:
-        logger.error("Error getting radar data")
-        exit(1)
+    # **************************************************************
+    # Build Telegram message
+    # **************************************************************
+    logger.info("Building Telegram message...")
+    message = build_message(morning_data, afternoon_data, radar_data_link)
+    logger.debug(f"\nTelegram message: {message}")
 
-    rows_data: List[List[str]] = []
-    for row in rows:
-        cells = row.find_all("td")
-        row_data: List[str] = [cell.get_text(strip=True) for cell in cells]
-        rows_data.append(row_data)
+    # **************************************************************
+    # Send Telegram message
+    # **************************************************************
+    logger.info("Sending Telegram message...")
+    send_message_to_telegram(
+        message=message, token=config.telegram.get("token", ""), chat_id=config.telegram.get("chat_id", "")
+    )
 
-    # Get today's row data
-    day = date.today().strftime("%e").strip()
-    today_rows_data: List[List[str]] = []
-    for i, row_data in enumerate(rows_data):
-        if row_data[0] == day:
-            today_rows_data.append(row_data)
-            today_rows_data.append(rows_data[i + 1])
-            break
-    logger.debug(f"Today's row data: {today_rows_data}")
-
-    # Split the string using regular expressions to identify word boundaries
-    streets = re.findall(r"[A-Z][a-z]*[^A-Z]*", today_rows_data[0][2] + today_rows_data[1][2])
-
-    # Remove any leading or trailing whitespace from each street
-    streets = [street.strip() for street in streets]
-    logger.debug(f"Streets: {streets}")
+    logger.info("All done! Exiting...")
 
 
 if __name__ == "__main__":
