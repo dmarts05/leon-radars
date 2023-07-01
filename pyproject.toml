@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "leon-radars"
+version = "1.0.0"
+description = "A python project to scrape the daily information about mobile radars in the city of León"
+authors = ["dmarts05 <dmarts05@estudiantes.unileon.es>"]
+readme = "README.md"
+packages = [{include = "leon_radars"}]
+
+[tool.poetry.scripts]
+leon-radars = "leon_radars.__main__:main"
+
+[tool.poetry.dependencies]
+python = ">=3.9, <4.0"
+requests = "^2.30.0"
+beautifulsoup4 = "^4.12.2"
+pyyaml = "^6.0"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.3.2"
+black = "^23.3.0"
+flake8 = "^6.0.0"
+isort = "^5.12.0"
+pytest = "^7.3.1"
+mypy = "^1.3.0"
+types-requests = "^2.30.0.0"
+types-pyyaml = "^6.0.12.9"
+types-beautifulsoup4 = "^4.12.0.5"
+
+[tool.black]
+line-length = 119
+
+[tool.flake8]
+max-line-length = 120
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
