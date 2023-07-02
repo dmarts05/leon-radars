@@ -2,6 +2,8 @@
 
 import os
 
+from requests import RequestException
+
 from leon_radars.config_parser.config_parser import parse_config
 from leon_radars.message.message_builder import build_message
 from leon_radars.message.message_sender import send_message_to_telegram
@@ -55,16 +57,20 @@ def main() -> None:
     # Build Telegram message
     # **************************************************************
     logger.info("Building Telegram message...")
-    message = build_message(morning_data, afternoon_data, radar_data_link)
+    message = build_message(morning_data, afternoon_data, radar_data_link, config.monitored_streets)
     logger.debug(f"\nTelegram message: {message}")
 
     # **************************************************************
     # Send Telegram message
     # **************************************************************
     logger.info("Sending Telegram message...")
-    send_message_to_telegram(
-        message=message, token=config.telegram.get("token", ""), chat_id=config.telegram.get("chat_id", "")
-    )
+    try:
+        send_message_to_telegram(
+            message=message, token=config.telegram.get("token", ""), chat_id=config.telegram.get("chat_id", "")
+        )
+    except RequestException as e:
+        logger.error(f"Error sending Telegram message: {e}")
+        exit(1)
 
     logger.info("All done! Exiting...")
 

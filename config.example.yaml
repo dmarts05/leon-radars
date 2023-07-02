@@ -1,5 +1,11 @@
 # Configuration file for leon-radars
 
+# Streets to monitor. These will be highlighted in the reports for your convenience.
+# Note: Avoid putting Avda. or Calle among other prefixes in the street name, as they are not always present in the reports and may be unreliable.
+monitored_streets:
+  - "Antibióticos"
+  - "Salamanca"
+
 # Telegram bot for sending reports
 # Note 1: You must create a Telegram bot and get the bot token: https://core.telegram.org/bots#6-botfather
 # Note 2: You must get the channel ID for the channel associated with the bot: https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id
