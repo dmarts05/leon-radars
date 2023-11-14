@@ -16,7 +16,7 @@ def format_radar_data(radar_data: Dict[str, str], monitored_streets: List[str]) 
     message = ""
     for k, v in radar_data.items():
         if any(street.lower() in k.lower() for street in monitored_streets):
-            message += f"<em><strong>\t - {k}: {v} km/h\n</strong></em>"
+            message += f"\t - ⚠️  <strong>{k}: {v} km/h</strong> ⚠️\n"
         else:
             message += f"\t - {k}: {v} km/h\n"
     return message

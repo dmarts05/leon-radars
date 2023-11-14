@@ -29,7 +29,8 @@ def extract_radar_data() -> Tuple[Dict[str, str], Dict[str, str], str]:
     rows_data: List[List[str]] = []
     for row in rows:
         cells = row.find_all("td")
-        row_data: List[str] = [cell.get_text() for cell in cells]
+        # We also remove \xa0 from data to prevent some obscure errors
+        row_data: List[str] = [cell.get_text().replace("\\xa0", "").strip() for cell in cells]
         rows_data.append(row_data)
 
     # Get today's row data
