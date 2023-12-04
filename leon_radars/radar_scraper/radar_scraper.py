@@ -2,10 +2,10 @@
 from datetime import date
 from typing import Dict, List, Tuple
 
-import requests
 from bs4 import BeautifulSoup
 
 from leon_radars.utils.logger import setup_logger
+from leon_radars.utils.session_with_user_agent import create_session_with_user_agent
 
 from .helpers import get_latest_radar_link
 
@@ -14,7 +14,8 @@ logger = setup_logger(__name__)
 
 def extract_radar_data() -> Tuple[Dict[str, str], Dict[str, str], str]:
     radar_data_link = get_latest_radar_link()
-    res = requests.get(radar_data_link)
+    session = create_session_with_user_agent()
+    res = session.get(radar_data_link)
     if res.status_code != 200:
         logger.error("Error getting radar data")
         exit(1)

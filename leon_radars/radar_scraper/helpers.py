@@ -1,10 +1,10 @@
 """Module that contains helper functions for the radar scraper."""
 from datetime import date
 
-import requests
 from bs4 import BeautifulSoup
 
 from leon_radars.utils.logger import setup_logger
+from leon_radars.utils.session_with_user_agent import create_session_with_user_agent
 
 logger = setup_logger(__name__)
 
@@ -28,7 +28,8 @@ def get_latest_radar_link() -> str:
     request_url = "https://www.ahoraleon.com/?s=radar+" + month_name
     logger.debug(f"Request URL: {request_url}")
 
-    res = requests.get(request_url)
+    session = create_session_with_user_agent()
+    res = session.get(request_url)
     if res.status_code != 200:
         logger.error("Error getting radar data link")
         exit(1)
